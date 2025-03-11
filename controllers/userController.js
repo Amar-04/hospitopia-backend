@@ -9,10 +9,7 @@ export const getUsers = async (req, res) => {
 
     const filter = {};
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-      ];
+      filter.name = search; 
     }
     if (role) filter.role = role;
     if (status) filter.status = status;
@@ -40,7 +37,7 @@ export const getUsers = async (req, res) => {
 
 // @desc    Create a new user
 // @route   POST /api/users
-// @access  Public
+// @access  Public 
 export const createUser = async (req, res) => {
   try {
     const { name, email, role, status } = req.body;
