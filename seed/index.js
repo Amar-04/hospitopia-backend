@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.js";
-import User from "../models/User.js";
+import User from "../models/admin/User.js";
+import Guest from "../models/reception/Customers.js";
 
 dotenv.config();
 
@@ -48,18 +49,63 @@ const seedUsers = [
   },
 ];
 
+const seedGuests = [
+  {
+    name: "John Smith",
+    email: "john.smith@example.com",
+    phone: "+1 (555) 123-4567",
+    status: "Current Guest",
+    lastStay: "Room 101 (now)",
+    // visits: 3,
+  },
+  {
+    name: "Jane Cooper",
+    email: "jane.cooper@example.com",
+    phone: "+1 (555) 234-5678",
+    status: "Arriving Today",
+    lastStay: "Room 202 (booked)",
+    // visits: 1,
+  },
+  {
+    name: "Robert Fox",
+    email: "robert.fox@example.com",
+    phone: "+1 (555) 345-6789",
+    status: "Current Guest",
+    lastStay: "Room 305 (now)",
+    // visits: 2,
+  },
+  {
+    name: "Emma Wilson",
+    email: "emma.w@example.com",
+    phone: "+1 (555) 456-7890",
+    status: "Past Guest",
+    lastStay: "Feb 15, 2024",
+    // visits: 5,
+  },
+  {
+    name: "Michael Brown",
+    email: "michael.b@example.com",
+    phone: "+1 (555) 567-8901",
+    status: "Past Guest",
+    lastStay: "Jan 23, 2024",
+    // visits: 4,
+  },
+];
+
 const seedDatabase = async () => {
   try {
     await connectDB(); // Connect to MongoDB
     console.log("✅ Connected to Database");
 
     // Clear existing data
-    await User.deleteMany();
-    console.log("🗑 Cleared existing data");
+    // await User.deleteMany();
+    // await Guest.deleteMany();
+    // console.log("🗑 Cleared existing data for Users and Guests");
 
     // Insert new data
-    await User.insertMany(seedUsers);
-    console.log("✅ Database Seeded Successfully");
+    // await User.insertMany(seedUsers);
+    await Guest.insertMany(seedGuests);
+    console.log("✅ Database Seeded Successfully with Users and Guests");
 
     process.exit(); // Exit script
   } catch (error) {
