@@ -1,4 +1,4 @@
-import Room from "../models/Room.js";
+import Room from "../../models/admin/Room.js";
 
 // Get all rooms with pagination & filtering
 export const getRooms = async (req, res) => {
@@ -69,6 +69,49 @@ export const updateRoom = async (req, res) => {
     res.json(updatedRoom);
   } catch (error) {
     res.status(400).json({ message: "Failed to update room", error });
+  }
+}; 
+
+// Update room cleaning or maintenance status
+export const updateRoomStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let { status, cleaning, issue, eta } = req.body;
+
+    if (!["Cleaning", "Maintenance", "Available"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status update" });
+    }
+
+    let updateData = { status };
+
+    if (status === "Cleaning" && cleaning) {
+      updateData.cleaning = cleaning;
+      updateData.issue = null;
+      updateData.eta = null;
+    } else if (status === "Maintenance") {
+      updateData.issue = issue || "";
+      updateData.eta = eta || "";
+      updateData.cleaning = null;
+      updateData.lastCleaned = null;
+    } else if (status === "Available") {
+      updateData.cleaning = "Completed"; // Mark cleaning as completed
+      updateData.lastCleaned = new Date(); // Set last cleaned timestamp
+      updateData.issue = null; // Remove previous issue
+      updateData.eta = null; // Remove previous ETA
+    }
+
+    const updatedRoom = await Room.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    if (!updatedRoom) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    res.status(200).json(updatedRoom);
+  } catch (error) {
+    console.error("Error updating room:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

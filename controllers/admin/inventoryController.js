@@ -1,4 +1,4 @@
-import Inventory from "../models/Inventory.js";
+import Inventory from "../../models/admin/Inventory.js";
 
 // Get all inventory items with pagination & filtering
 export const getInventory = async (req, res) => {

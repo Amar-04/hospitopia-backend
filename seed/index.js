@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.js";
-import User from "../models/User.js";
-import Inventory from "../models/Inventory.js";
-import Room from "../models/Room.js";
+import User from "../models/admin/User.js";
+import Inventory from "../models/admin/Inventory.js";
+import Room from "../models/admin/Room.js";
+import Guest from "../models/reception/Guest.js";
 
 dotenv.config();
+
+//Admin
 
 const seedUsers = [
   {
@@ -126,6 +129,49 @@ const seedRooms = [
   },
 ];
 
+const seedGuests = [
+  {
+    name: "John Smith",
+    email: "john.smith@example.com",
+    phone: "+1 (555) 123-4567",
+    status: "Current Guest",
+    lastStay: new Date(),
+    visits: 3,
+  },
+  {
+    name: "Jane Cooper",
+    email: "jane.cooper@example.com",
+    phone: "+1 (555) 234-5678",
+    status: "Arriving Today",
+    lastStay: new Date(),
+    visits: 1,
+  },
+  {
+    name: "Robert Fox",
+    email: "robert.fox@example.com",
+    phone: "+1 (555) 345-6789",
+    status: "Current Guest",
+    lastStay: new Date(),
+    visits: 2,
+  },
+  {
+    name: "Emma Wilson",
+    email: "emma.w@example.com",
+    phone: "+1 (555) 456-7890",
+    status: "Past Guest",
+    lastStay: new Date("2024-02-15"),
+    visits: 5,
+  },
+  {
+    name: "Michael Brown",
+    email: "michael.b@example.com",
+    phone: "+1 (555) 567-8901",
+    status: "Past Guest",
+    lastStay: new Date("2024-01-23"),
+    visits: 4,
+  },
+];
+
 const seedDatabase = async () => {
   try {
     await connectDB(); // Connect to MongoDB
@@ -134,13 +180,15 @@ const seedDatabase = async () => {
     // Clear existing data
     // await User.deleteMany();
     // await Inventory.deleteMany();
-    await Room.deleteMany();
+    // await Room.deleteMany();
+    await Guest.deleteMany();
     console.log("🗑 Cleared existing data");
 
     // Insert new data
     // await User.insertMany(seedUsers);
     // await Inventory.insertMany(seedInventory);
-    await Room.insertMany(seedRooms);
+    // await Room.insertMany(seedRooms);
+    await Guest.insertMany(seedGuests);
     console.log("✅ Database Seeded Successfully");
 
     process.exit(); // Exit script

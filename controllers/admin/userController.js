@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import User from "../../models/admin/User.js";
 
 // @desc    Get all users with pagination & filtering
 // @route   GET /api/users
