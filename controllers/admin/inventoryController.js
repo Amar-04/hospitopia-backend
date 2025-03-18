@@ -1,7 +1,7 @@
-import Inventory from "../../models/admin/Inventory.js";
+import AdminInventory from "../../models/admin/Inventory.js";
 
 // Get all inventory items with pagination & filtering
-export const getInventory = async (req, res) => {
+export const getAdminInventory = async (req, res) => {
   try {
     const { page = 1, limit = 5, category, status } = req.query;
 
@@ -13,11 +13,11 @@ export const getInventory = async (req, res) => {
     console.log("🔍 Applied Filters:", filter); // Debugging filters
 
     // Fetch inventory items with pagination
-    const inventory = await Inventory.find(filter)
+    const inventory = await AdminInventory.find(filter)
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
-    const totalItems = await Inventory.countDocuments(filter);
+    const totalItems = await AdminInventory.countDocuments(filter);
 
     res.json({
       results: inventory,
@@ -31,9 +31,9 @@ export const getInventory = async (req, res) => {
 };
 
 // Add new inventory item
-export const createInventoryItem = async (req, res) => {
+export const createAdminInventoryItem = async (req, res) => {
   try {
-    const newItem = await Inventory.create(req.body);
+    const newItem = await AdminInventory.create(req.body);
     res.status(201).json(newItem);
   } catch (error) {
     res.status(400).json({ message: "Failed to add item", error });
@@ -41,9 +41,9 @@ export const createInventoryItem = async (req, res) => {
 };
 
 // Update inventory item
-export const updateInventoryItem = async (req, res) => {
+export const updateAdminInventoryItem = async (req, res) => {
   try {
-    const updatedItem = await Inventory.findByIdAndUpdate(
+    const updatedItem = await AdminInventory.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
@@ -58,9 +58,9 @@ export const updateInventoryItem = async (req, res) => {
 };
 
 // Delete inventory item
-export const deleteInventoryItem = async (req, res) => {
+export const deleteAdminInventoryItem = async (req, res) => {
   try {
-    const deletedItem = await Inventory.findByIdAndDelete(req.params.id);
+    const deletedItem = await AdminInventory.findByIdAndDelete(req.params.id);
     if (!deletedItem)
       return res.status(404).json({ message: "Item not found" });
 

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const inventorySchema = new mongoose.Schema(
+const adminInventorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     category: {
@@ -15,5 +15,5 @@ const inventorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Inventory = mongoose.model("Inventory", inventorySchema);
-export default Inventory;
+const AdminInventory = mongoose.model("AdminInventory", adminInventorySchema);
+export default AdminInventory;

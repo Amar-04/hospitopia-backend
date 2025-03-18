@@ -2,9 +2,10 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../config/db.js";
 import User from "../models/admin/User.js";
-import Inventory from "../models/admin/Inventory.js";
+import AdminInventory from "../models/admin/Inventory.js";
 import Room from "../models/admin/Room.js";
 import Guest from "../models/reception/Guest.js";
+import Inventory from "../models/kitchen/Inventory.js";
 
 dotenv.config();
 
@@ -172,6 +173,17 @@ const seedGuests = [
   },
 ];
 
+const seedKitchenInventory = [
+  { name: "Chicken Breast", category: "Meat", stock: 24, minRequired: 20, status: "Good" },
+  { name: "Ground Beef", category: "Meat", stock: 18, minRequired: 15, status: "Good" },
+  { name: "Salmon Fillet", category: "Seafood", stock: 12, minRequired: 10, status: "Good" },
+  { name: "Tomatoes", category: "Produce", stock: 8, minRequired: 15, status: "Low" },
+  { name: "Lettuce", category: "Produce", stock: 5, minRequired: 10, status: "Low" },
+  { name: "Flour", category: "Dry Goods", stock: 35, minRequired: 20, status: "Good" },
+  { name: "Sugar", category: "Dry Goods", stock: 22, minRequired: 15, status: "Good" },
+  { name: "Olive Oil", category: "Oils", stock: 3, minRequired: 5, status: "Critical" },
+];
+
 const seedDatabase = async () => {
   try {
     await connectDB(); // Connect to MongoDB
@@ -179,16 +191,18 @@ const seedDatabase = async () => {
 
     // Clear existing data
     // await User.deleteMany();
-    // await Inventory.deleteMany();
+    // await AdminInventory.deleteMany();
+    await Inventory.deleteMany();
     // await Room.deleteMany();
-    await Guest.deleteMany();
+    // await Guest.deleteMany();
     console.log("🗑 Cleared existing data");
 
     // Insert new data
     // await User.insertMany(seedUsers);
-    // await Inventory.insertMany(seedInventory);
+    // await AdminInventory.insertMany(seedInventory);
+    await Inventory.insertMany(seedKitchenInventory);
     // await Room.insertMany(seedRooms);
-    await Guest.insertMany(seedGuests);
+    // await Guest.insertMany(seedGuests);
     console.log("✅ Database Seeded Successfully");
 
     process.exit(); // Exit script
