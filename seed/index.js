@@ -6,7 +6,7 @@ import AdminInventory from "../models/admin/Inventory.js";
 import Room from "../models/admin/Room.js";
 import Guest from "../models/reception/Guest.js";
 import Inventory from "../models/kitchen/Inventory.js";
-
+import Staff from "../models/admin/Staff.js";
 dotenv.config();
 
 //Admin
@@ -53,6 +53,55 @@ const seedUsers = [
     avatar: "TB",
   },
 ];
+
+const seedStaff = [
+  {
+    name: "John Doe",
+    role: "Reception",
+    shift: "Morning",
+    status: "Active",
+    email: "john.doe@hotel.com",
+    lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    avatar: "JD",
+  },
+  {
+    name: "Jane Smith",
+    role: "Kitchen",
+    shift: "Evening",
+    status: "Active",
+    email: "jane.smith@hotel.com",
+    lastActive: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
+    avatar: "JS",
+  },
+  {
+    name: "Mike Johnson",
+    role: "Admin",
+    shift: "Night",
+    status: "Away",
+    email: "mike.j@hotel.com",
+    lastActive: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    avatar: "MJ",
+  },
+  {
+    name: "Sarah Wilson",
+    role: "Reception",
+    shift: "Morning",
+    status: "Active",
+    email: "sarah.w@hotel.com",
+    lastActive: new Date(), // Just now
+    avatar: "SW",
+  },
+  {
+    name: "Tom Brown",
+    role: "Kitchen",
+    shift: "Night",
+    status: "Away",
+    email: "tom.b@hotel.com",
+    lastActive: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+    avatar: "TB",
+  },
+];
+
 
 const seedInventory = [
   {
@@ -192,7 +241,8 @@ const seedDatabase = async () => {
     // Clear existing data
     // await User.deleteMany();
     // await AdminInventory.deleteMany();
-    await Inventory.deleteMany();
+    // await Inventory.deleteMany();
+    await Staff.deleteMany();
     // await Room.deleteMany();
     // await Guest.deleteMany();
     console.log("🗑 Cleared existing data");
@@ -200,7 +250,8 @@ const seedDatabase = async () => {
     // Insert new data
     // await User.insertMany(seedUsers);
     // await AdminInventory.insertMany(seedInventory);
-    await Inventory.insertMany(seedKitchenInventory);
+    // await Inventory.insertMany(seedKitchenInventory);
+    await Staff.insertMany(seedStaff);
     // await Room.insertMany(seedRooms);
     // await Guest.insertMany(seedGuests);
     console.log("✅ Database Seeded Successfully");
