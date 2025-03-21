@@ -45,11 +45,6 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
-    roomPlan: {
-      type: String,
-      enum: ["Standard", "Extra Blanket", "Extra Bed"],
-      default: "Standard",
-    },
     extras: {
       type: [String],
       enum: ["Breakfast", "Lunch", "Dinner", "Laundry"],
@@ -59,10 +54,7 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: "No Request",
     },
-    subtotal: { type: Number },
-    discount: { type: Number, default: 0 },
-    taxes: { type: Number },
-    totalAmount: { type: Number },
+   
   },
   { timestamps: true }
 );

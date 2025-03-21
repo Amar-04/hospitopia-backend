@@ -1,4 +1,5 @@
 import Room from "../../models/admin/Room.js";
+import RoomType from "../../models/admin/RoomType.js";
 
 // Get all rooms with pagination & filtering
 export const getRooms = async (req, res) => {
@@ -9,10 +10,10 @@ export const getRooms = async (req, res) => {
     if (status) filter.status = status;
     if (type) filter.type = type;
 
-    console.log("🔍 Applied Filters:", filter);
-
     // Fetch rooms with pagination
+    // Fetch rooms with room type details
     const rooms = await Room.find(filter)
+      .populate("type") // Fetch RoomType details
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
@@ -31,11 +32,24 @@ export const getRooms = async (req, res) => {
 
 // Add new room
 export const createRoom = async (req, res) => {
-  try {
-    const { checkOut, lastCleaned, arrival, ...rest } = req.body;
+  console.log("📥 Received Room Data:", req.body);
 
+  try {
+    const { type, checkOut, lastCleaned, arrival, ...rest } = req.body;
+
+    // ✅ Validate Room Type
+    const roomType = await RoomType.findById(type);
+    console.log("✅ Found Room Type:", roomType);
+    
+    if (!roomType) {
+      return res.status(400).json({ message: "Invalid Room Type" });
+    }
+
+    // ✅ Attempt to create the room
     const newRoom = await Room.create({
       ...rest,
+      type: roomType._id, // Assign RoomType ID
+      price: roomType.price,
       checkOut: checkOut ? new Date(checkOut) : null,
       lastCleaned: lastCleaned ? new Date(lastCleaned) : null,
       arrival: arrival ? new Date(arrival) : null,
@@ -43,9 +57,11 @@ export const createRoom = async (req, res) => {
 
     res.status(201).json(newRoom);
   } catch (error) {
-    res.status(400).json({ message: "Failed to add room", error });
+    console.error("❌ Mongoose Validation Error:", error); // ✅ Log full error
+    res.status(400).json({ message: "Failed to add room", error: error.message });
   }
 };
+
 
 // Update room details
 export const updateRoom = async (req, res) => {
@@ -70,7 +86,7 @@ export const updateRoom = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: "Failed to update room", error });
   }
-}; 
+};
 
 // Update room cleaning or maintenance status
 export const updateRoomStatus = async (req, res) => {

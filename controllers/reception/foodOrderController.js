@@ -17,6 +17,10 @@ export const getFoodOrders = async (req, res) => {
         select: "number", // Fetch room number
       })
       .populate({
+        path: "bookingId",
+        select: "_id",
+      })
+      .populate({
         path: "items",
         select: "name price", // Fetch item name & price
       })
@@ -43,17 +47,28 @@ export const getFoodOrders = async (req, res) => {
  */
 export const createFoodOrder = async (req, res) => {
   try {
-    const { room, items, status, time, price } = req.body;
+    const { room, items } = req.body;
 
     // Validate Room existence
     const existingRoom = await Room.findById(room);
-    if (!existingRoom)
+    if (!existingRoom) {
       return res.status(400).json({ error: "Invalid room ID" });
+    }
+
+    // Ensure the room has an active booking
+    if (!existingRoom.bookingId) {
+      return res
+        .status(400)
+        .json({ error: "No active booking found for this room" });
+    }
 
     // Validate Menu Items existence
     const existingItems = await MenuItem.find({ _id: { $in: items } });
-    if (existingItems.length !== items.length)
+    if (existingItems.length !== items.length) {
       return res.status(400).json({ error: "One or more items are invalid" });
+    }
+
+    const totalPrice = existingItems.reduce((sum, item) => sum + item.price, 0);
 
     // Find the last order and increment orderId
     const lastOrder = await FoodOrder.findOne().sort({ orderId: -1 });
@@ -62,11 +77,12 @@ export const createFoodOrder = async (req, res) => {
     const newOrder = new FoodOrder({
       orderId: newOrderId,
       room: existingRoom._id,
+      bookingId: existingRoom.bookingId, // Assign bookingId from Room
       items: existingItems.map((item) => item._id),
       receptionStatus: "New Order", // Auto-set for reception
       kitchenStatus: "Pending", // Auto-set for kitchen
-      time,
-      price,
+      time: new Date().toISOString(), // Automatically store order time
+      price: totalPrice, // Automatically calculate price
     });
 
     await newOrder.save();
@@ -74,11 +90,13 @@ export const createFoodOrder = async (req, res) => {
     // Populate response before sending it back
     const populatedOrder = await newOrder.populate([
       { path: "room", select: "number" },
+      { path: "bookingId", select: "_id" }, // Populate bookingId for verification
       { path: "items", select: "name price" },
     ]);
 
     res.status(201).json(populatedOrder);
   } catch (error) {
+    console.error("❌ Error Creating Food Order:", error);
     res.status(500).json({ error: "Server error" });
   }
 };

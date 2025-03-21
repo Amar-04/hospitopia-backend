@@ -11,6 +11,11 @@ const foodOrderSchema = new mongoose.Schema(
       ref: "Room",
       required: [true, "Room number is required"],
     },
+    bookingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking", // Store the bookingId from Room
+      required: [true, "Booking ID is required"],
+    },
     items: [
       {
         type: mongoose.Schema.Types.ObjectId,

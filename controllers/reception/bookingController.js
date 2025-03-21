@@ -1,6 +1,7 @@
 import Booking from "../../models/reception/Booking.js";
 import Room from "../../models/admin/Room.js";
 import Guest from "../../models/reception/Guest.js";
+import AdminInventory from "../../models/admin/Inventory.js";
 
 // 🟢 Create a new booking
 export const createBooking = async (req, res) => {
@@ -12,13 +13,8 @@ export const createBooking = async (req, res) => {
       checkOut,
       numAdults,
       numChildren,
-      roomPlan,
       extras,
       guestComment,
-      subtotal,
-      discount,
-      taxes,
-      totalAmount,
     } = req.body;
 
     // Validate Guest existence & status
@@ -33,7 +29,7 @@ export const createBooking = async (req, res) => {
     }
 
     // Validate Room existence
-    const room = await Room.findById(roomId);
+    const room = await Room.findById(roomId).populate("type");
     if (!room) {
       return res.status(404).json({ message: "Room not found." });
     }
@@ -58,13 +54,8 @@ export const createBooking = async (req, res) => {
       checkOut,
       numAdults,
       numChildren,
-      roomPlan,
       extras,
       guestComment,
-      subtotal: subtotal || 0, // Default to 0 if not provided
-      discount: discount || 0,
-      taxes: taxes || 0,
-      totalAmount: totalAmount || 0,
     });
 
     await newBooking.save();
@@ -76,6 +67,7 @@ export const createBooking = async (req, res) => {
         status: "Occupied", // Change status to "Occupied"
         guest: guest.name, // Set guest name in room
         checkOut: checkOut, // Set check-out date
+        bookingId: newBooking._id,
         cleaning: null, // Remove cleaning info
         lastCleaned: null, // Remove last cleaned date
       },
@@ -97,6 +89,21 @@ export const createBooking = async (req, res) => {
       return res.status(404).json({ message: "Guest update failed" });
     }
     res.status(201).json(newBooking);
+
+    // Fetch all inventory items
+    const inventoryItems = await AdminInventory.find();
+    if (inventoryItems.length === 0) {
+      return res.status(400).json({ message: "Inventory items not found" });
+    }
+
+    // Decrement stock for each inventory item
+    for (const item of inventoryItems) {
+      if (item.stock > 0) {
+        await AdminInventory.findByIdAndUpdate(item._id, {
+          $inc: { stock: -1 },
+        });
+      }
+    }
   } catch (error) {
     console.error("❌ Error Creating Booking:", error);
     res.status(500).json({ message: "Failed to create booking", error });
@@ -105,7 +112,7 @@ export const createBooking = async (req, res) => {
 
 export const getAllBookings = async (req, res) => {
   try {
-    const { page = 1, limit = 5, status } = req.query;
+    const { page = 1, limit = 5, status, sort } = req.query;
     const filter = {};
 
     // Optional status filter
@@ -113,10 +120,24 @@ export const getAllBookings = async (req, res) => {
       filter.status = status;
     }
 
-    // Fetch bookings with pagination
-    const bookings = await Booking.find(filter)
-      .populate("guest", "name") // Only fetch name
-      .populate("room", "number type") // Only fetch number & type
+    const sortOrder = sort === "desc" ? -1 : sort === "asc" ? 1 : null;
+
+    // ✅ Define query properly before executing
+    let query = Booking.find(filter)
+      .populate("guest", "name") // Fetch guest name only
+      .populate({
+        path: "room",
+        select: "number type",
+        populate: { path: "type", select: "name" }, // Fetch room type name
+      });
+
+    // ✅ Apply sorting before executing the query
+    if (sortOrder !== null) {
+      query = query.sort({ createdAt: sortOrder });
+    }
+
+    // ✅ Apply pagination AFTER sorting
+    const bookings = await query
       .skip((Number(page) - 1) * Number(limit))
       .limit(Number(limit));
 
