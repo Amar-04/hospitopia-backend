@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Name is required"],
       trim: true,
-    }, 
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -18,14 +18,13 @@ const userSchema = new mongoose.Schema(
       enum: ["Reception", "Kitchen", "Admin"],
       required: [true, "Role is required"],
     },
-    status: {
+    shiftStart: {
       type: String,
-      enum: ["Active", "Away"],
-      default: "Active",
+      required: [true, "Shift start time is required"],
     },
-    lastActive: {
-      type: Date,
-      default: Date.now,
+    shiftEnd: {
+      type: String,
+      required: [true, "Shift end time is required"],
     },
     avatar: {
       type: String,

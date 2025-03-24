@@ -1,80 +1,77 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
-import connectDB from "../config/db.js";  // Assuming you have a connectDB function
-import RoomType from "../models/admin/RoomType.js";  // Import RoomType model
+import mongoose from "mongoose";
+import connectDB from "../config/db.js"; // Ensure your DB config is correctly set up
+import User from "../models/admin/User.js"; // Adjust the path based on your project structure
 
 dotenv.config();
 
-const updateRoomTypes = async () => {
+const assignShiftTimings = () => {
+  // Define predefined shifts
+  const shifts = [
+    { shiftStart: "08:00", shiftEnd: "16:00" }, // Morning shift
+    { shiftStart: "16:00", shiftEnd: "00:00" }, // Evening shift
+    { shiftStart: "00:00", shiftEnd: "08:00" }, // Night shift
+  ];
+
+  // Randomly select a shift
+  return shifts[Math.floor(Math.random() * shifts.length)];
+};
+
+const updateUsersWithShifts = async () => {
   try {
-    // Connect to the database
+    // Connect to MongoDB
     await connectDB();
     console.log("✅ Connected to Database");
 
-    // Define the updated roomType data
-    const roomTypesData = [
-      {
-        name: "Standard",
-        price: 100,
-        maxGuests: {
-          adults: 2,
-          children: 1
-        },
-        extraCost: {
-          adult: 25,
-          child: 15
-        }
-      },
-      {
-        name: "Deluxe",
-        price: 200,
-        maxGuests: {
-          adults: 3,
-          children: 1
-        },
-        extraCost: {
-          adult: 30,
-          child: 20
-        }
-      },
-      {
-        name: "Suite",
-        price: 300,
-        maxGuests: {
-          adults: 4,
-          children: 2
-        },
-        extraCost: {
-          adult: 40,
-          child: 25
-        }
-      }
-    ];
+    // Fetch all users
+    const users = await User.find();
+    console.log(`🔍 Found ${users.length} users`);
 
-    // Update the existing documents without adding new ones
-    for (const roomType of roomTypesData) {
-      const result = await RoomType.updateOne(
-        { name: roomType.name },  // Match by room type name
-        { $set: roomType }  // Update the fields if a matching document is found
+    // Iterate over each user and assign shift timings
+    for (const user of users) {
+      const { shiftStart, shiftEnd } = assignShiftTimings();
+
+      // Update user document
+      await User.findByIdAndUpdate(
+        user._id,
+        { shiftStart, shiftEnd },
+        { new: true }
       );
 
-      // Check if any document was matched and updated
-      if (result.matchedCount === 0) {
-        console.log(`No document found to update for room type: ${roomType.name}`);
-      } else {
-        console.log(`Room type '${roomType.name}' updated successfully.`);
-      }
+      console.log(
+        `✅ Updated ${user.name} (${user.email}) with Shift: ${shiftStart} - ${shiftEnd}`
+      );
     }
 
-    console.log("✅ Room types updated successfully!");
-
-    process.exit(); // Exit the script
-
+    console.log("🎉 All users updated successfully!");
+    mongoose.connection.close();
   } catch (error) {
-    console.error("❌ Error updating room types:", error);
-    process.exit(1);
+    console.error("❌ Error updating users:", error);
+    mongoose.connection.close();
   }
 };
 
-// Call the function to update room types
-updateRoomTypes();
+const removeStatusField = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    console.log("✅ Connected to Database");
+
+    // Update all user documents and remove the "status" field
+    const result = await User.updateMany({}, { $unset: { status: 1 } });
+
+    console.log(`✅ Removed "status" from ${result.modifiedCount} users`);
+
+    // Close the database connection
+    mongoose.connection.close();
+  } catch (error) {
+    console.error("❌ Error updating users:", error);
+    mongoose.connection.close();
+  }
+};
+
+// Run the script
+removeStatusField();
+
+// Run the script
+// updateUsersWithShifts();
