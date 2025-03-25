@@ -39,13 +39,45 @@ const billingSchema = new mongoose.Schema(
     foodOrders: [
       {
         orderId: { type: mongoose.Schema.Types.ObjectId, ref: "FoodOrder" },
+        items: [
+          {
+            itemId: { type: mongoose.Schema.Types.ObjectId, ref: "MenuItem" },
+            name: { type: String, required: true },
+          },
+        ],
         price: { type: Number, required: true },
       },
     ],
     totalFoodCost: { type: Number, required: true },
+    serviceRequests: [
+      {
+        requestId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "ServiceRequest",
+        },
+        services: [
+          {
+            serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+            name: { type: String, required: true },
+          },
+        ],
+        price: { type: Number, required: true },
+      },
+    ],
+    totalServiceCost: { type: Number, required: true, default: 0 },
     subtotal: { type: Number, required: true },
     taxes: { type: Number, default: 5 }, // Fixed 5% tax
     totalAmount: { type: Number, required: true },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "refunded", "cancelled"],
+      default: "pending",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "debit card", "credit card", "upi"],
+      default: null,
+    },
   },
   { timestamps: true }
 );

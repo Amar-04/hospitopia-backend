@@ -8,11 +8,13 @@ import roomRoutes from "./routes/admin/roomRoutes.js";
 import roomTypeRoutes from "./routes/admin/roomTypeRoutes.js";
 import guestRoutes from "./routes/reception/guestRoutes.js";
 import bookingRoutes from "./routes/reception/bookingRoutes.js";
-import billingRoutes from "./routes/reception/billingRoutes.js"
+import serviceRoutes from "./routes/reception/serviceRoutes.js";
+import serviceRequestRoutes from "./routes/reception/serviceRequestRoutes.js";
+import billingRoutes from "./routes/reception/billingRoutes.js";
 import kitchenInventoryRoutes from "./routes/kitchen/inventoryRoutes.js";
 import menuCategoryRoutes from "./routes/kitchen/menuCategoryRoutes.js";
 import menuItemRoutes from "./routes/kitchen/menuItemRoutes.js";
-import foodOrderRoutes from "./routes/reception/foodOrderRoutes.js"
+import foodOrderRoutes from "./routes/reception/foodOrderRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -32,6 +34,8 @@ app.use("/", roomTypeRoutes);
 app.use("/", guestRoutes);
 app.use("/", bookingRoutes);
 app.use("/", foodOrderRoutes);
+app.use("/", serviceRoutes);
+app.use("/", serviceRequestRoutes);
 app.use("/", billingRoutes);
 
 //Kitchen

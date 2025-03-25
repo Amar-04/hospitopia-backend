@@ -1,77 +1,40 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import connectDB from "../config/db.js"; // Ensure your DB config is correctly set up
-import User from "../models/admin/User.js"; // Adjust the path based on your project structure
 
 dotenv.config();
 
-const assignShiftTimings = () => {
-  // Define predefined shifts
-  const shifts = [
-    { shiftStart: "08:00", shiftEnd: "16:00" }, // Morning shift
-    { shiftStart: "16:00", shiftEnd: "00:00" }, // Evening shift
-    { shiftStart: "00:00", shiftEnd: "08:00" }, // Night shift
-  ];
+const sourceDBName = "hospitopia"; // Change this to your source database name
+const targetDBName = "hospitopia2"; // Change this to your target database name
+const collectionName = "sourceCollection"; // Change this to your collection name
 
-  // Randomly select a shift
-  return shifts[Math.floor(Math.random() * shifts.length)];
-};
+const copyCollection = async () => {
+    try {
+        // Connect to MongoDB
+        await connectDB();
+        console.log("Connected to MongoDB");
 
-const updateUsersWithShifts = async () => {
-  try {
-    // Connect to MongoDB
-    await connectDB();
-    console.log("✅ Connected to Database");
+        // Connect to source and target databases
+        const sourceDB = mongoose.connection.useDb(sourceDBName);
+        const targetDB = mongoose.connection.useDb(targetDBName);
 
-    // Fetch all users
-    const users = await User.find();
-    console.log(`🔍 Found ${users.length} users`);
+        // Fetch documents from source collection
+        const documents = await sourceDB.collection(collectionName).find().toArray();
 
-    // Iterate over each user and assign shift timings
-    for (const user of users) {
-      const { shiftStart, shiftEnd } = assignShiftTimings();
+        if (documents.length === 0) {
+            console.log("No documents found in source collection.");
+            return;
+        }
 
-      // Update user document
-      await User.findByIdAndUpdate(
-        user._id,
-        { shiftStart, shiftEnd },
-        { new: true }
-      );
-
-      console.log(
-        `✅ Updated ${user.name} (${user.email}) with Shift: ${shiftStart} - ${shiftEnd}`
-      );
+        // Insert documents into target collection
+        await targetDB.collection(collectionName).insertMany(documents);
+        console.log("Collection copied successfully!");
+    } catch (error) {
+        console.error("Error copying collection:", error);
+    } finally {
+        mongoose.connection.close();
+        console.log("Database connection closed.");
     }
-
-    console.log("🎉 All users updated successfully!");
-    mongoose.connection.close();
-  } catch (error) {
-    console.error("❌ Error updating users:", error);
-    mongoose.connection.close();
-  }
 };
 
-const removeStatusField = async () => {
-  try {
-    // Connect to MongoDB
-    await connectDB();
-    console.log("✅ Connected to Database");
-
-    // Update all user documents and remove the "status" field
-    const result = await User.updateMany({}, { $unset: { status: 1 } });
-
-    console.log(`✅ Removed "status" from ${result.modifiedCount} users`);
-
-    // Close the database connection
-    mongoose.connection.close();
-  } catch (error) {
-    console.error("❌ Error updating users:", error);
-    mongoose.connection.close();
-  }
-};
-
-// Run the script
-removeStatusField();
-
-// Run the script
-// updateUsersWithShifts();
+copyCollection();
