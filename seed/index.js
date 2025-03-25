@@ -1,80 +1,72 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
-import connectDB from "../config/db.js";  // Assuming you have a connectDB function
-import RoomType from "../models/admin/RoomType.js";  // Import RoomType model
+import connectDB from "../config/db.js";
+import AdminCategory from "../models/admin/Admincategory.js";
+import AdminInventory2 from "../models/admin/Admininventory2.js";
 
 dotenv.config();
 
-const updateRoomTypes = async () => {
+const seedData = async () => {
   try {
     // Connect to the database
     await connectDB();
     console.log("✅ Connected to Database");
 
-    // Define the updated roomType data
-    const roomTypesData = [
-      {
-        name: "Standard",
-        price: 100,
-        maxGuests: {
-          adults: 2,
-          children: 1
-        },
-        extraCost: {
-          adult: 25,
-          child: 15
-        }
-      },
-      {
-        name: "Deluxe",
-        price: 200,
-        maxGuests: {
-          adults: 3,
-          children: 1
-        },
-        extraCost: {
-          adult: 30,
-          child: 20
-        }
-      },
-      {
-        name: "Suite",
-        price: 300,
-        maxGuests: {
-          adults: 4,
-          children: 2
-        },
-        extraCost: {
-          adult: 40,
-          child: 25
-        }
-      }
+    // 🔹 Seed Categories (Hotel-Specific)
+    const admincategoriesData = [
+      { name: "Housekeeping" },
+      { name: "Kitchen Equipment" },
+      { name: "Room Supplies" },
+      { name: "Lobby & Reception" }
     ];
 
-    // Update the existing documents without adding new ones
-    for (const roomType of roomTypesData) {
-      const result = await RoomType.updateOne(
-        { name: roomType.name },  // Match by room type name
-        { $set: roomType }  // Update the fields if a matching document is found
-      );
+    const categoryMap = {}; // To store category names & ObjectIds
 
-      // Check if any document was matched and updated
-      if (result.matchedCount === 0) {
-        console.log(`No document found to update for room type: ${roomType.name}`);
-      } else {
-        console.log(`Room type '${roomType.name}' updated successfully.`);
-      }
+    for (const category of admincategoriesData) {
+      const result = await AdminCategory.findOneAndUpdate(
+        { name: category.name }, 
+        { $set: category }, 
+        { upsert: true, new: true } // Insert if not found, return updated doc
+      );
+      categoryMap[category.name] = result._id; // Store category ObjectId
+      console.log(`Category '${category.name}' ready with ID: ${result._id}`);
     }
 
-    console.log("✅ Room types updated successfully!");
+    // 🔹 Seed Inventory & Link to Categories
+    const admininventory2Data = [
+      { name: "Bath Towels", category: "Housekeeping", stock: 50, minRequired: 30, status: "Good", type: "reusable" },
+      { name: "Bedsheets", category: "Housekeeping", stock: 20, minRequired: 50, status: "Low", type: "reusable" },
+      { name: "Cooking Utensils", category: "Kitchen Equipment", stock: 15, minRequired: 10, status: "Good", type: "reusable" },
+      { name: "Wine Glasses", category: "Kitchen Equipment", stock: 5, minRequired: 20, status: "Critical", type: "reusable" },
+      { name: "Toiletries Kit", category: "Room Supplies", stock: 100, minRequired: 60, status: "Good", type: "single-use" },
+      { name: "Reception Desk Bells", category: "Lobby & Reception", stock: 2, minRequired: 5, status: "Low", type: "reusable" }
+    ];
 
-    process.exit(); // Exit the script
+    for (const item of admininventory2Data) {
+      // Replace category name with ObjectId
+      item.category = categoryMap[item.category];
+
+      const inventoryItem = await AdminInventory2.findOneAndUpdate(
+        { name: item.name },
+        { $set: item },
+        { upsert: true, new: true }
+      );
+
+      // 🔹 Add inventory item to the corresponding category
+      await AdminCategory.findByIdAndUpdate(item.category, {
+        $addToSet: { items: inventoryItem._id } // Prevent duplicates
+      });
+
+      console.log(`Inventory item '${item.name}' added to category '${item.category}'.`);
+    }
+
+    console.log("✅ Hotel Inventory & Categories Seeded Successfully!");
+    process.exit();
 
   } catch (error) {
-    console.error("❌ Error updating room types:", error);
+    console.error("❌ Error seeding hotel data:", error);
     process.exit(1);
   }
 };
 
-// Call the function to update room types
-updateRoomTypes();
+// Execute seeding function
+seedData();

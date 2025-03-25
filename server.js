@@ -12,13 +12,22 @@ import billingRoutes from "./routes/reception/billingRoutes.js"
 import kitchenInventoryRoutes from "./routes/kitchen/inventoryRoutes.js";
 import menuCategoryRoutes from "./routes/kitchen/menuCategoryRoutes.js";
 import menuItemRoutes from "./routes/kitchen/menuItemRoutes.js";
-import foodOrderRoutes from "./routes/reception/foodOrderRoutes.js"
+import foodOrderRoutes from "./routes/reception/foodOrderRoutes.js";
+import adminCategory from "./routes/admin/adminCategoryRoutes.js";
+import adminInventory from "./routes/admin/adminInventoryRoutes.js"
+import staffRoutes from "./routes/admin/staffRoutes.js"
 
 dotenv.config();
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] Incoming request: ${req.method} ${req.url}`);
+    console.log("Request Body:", req.body);
+    next();
+  });
+  
 
 connectDB();
 
@@ -27,6 +36,9 @@ app.use("/", userRoutes);
 app.use("/", inventoryRoutes);
 app.use("/", roomRoutes);
 app.use("/", roomTypeRoutes);
+app.use("/", adminCategory);
+app.use("/", adminInventory);
+app.use("/", staffRoutes);
 
 //Reception
 app.use("/", guestRoutes);
