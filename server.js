@@ -6,6 +6,7 @@ import userRoutes from "./routes/admin/userRoutes.js";
 import inventoryRoutes from "./routes/admin/inventoryRoutes.js";
 import roomRoutes from "./routes/admin/roomRoutes.js";
 import roomTypeRoutes from "./routes/admin/roomTypeRoutes.js";
+import dashboardDataRoutes from "./routes/admin/dashboardDataRoutes.js";
 import guestRoutes from "./routes/reception/guestRoutes.js";
 import bookingRoutes from "./routes/reception/bookingRoutes.js";
 import serviceRoutes from "./routes/reception/serviceRoutes.js";
@@ -29,6 +30,7 @@ app.use("/", userRoutes);
 app.use("/", inventoryRoutes);
 app.use("/", roomRoutes);
 app.use("/", roomTypeRoutes);
+app.use("/",dashboardDataRoutes);
 
 //Reception
 app.use("/", guestRoutes);

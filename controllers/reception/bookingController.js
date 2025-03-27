@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import Booking from "../../models/reception/Booking.js";
 import Room from "../../models/admin/Room.js";
 import Guest from "../../models/reception/Guest.js";
 import AdminInventory from "../../models/admin/Inventory.js";
+import Billing from "../../models/reception/Billing.js";
 
 // 🟢 Create a new booking
 export const createBooking = async (req, res) => {
@@ -56,6 +58,7 @@ export const createBooking = async (req, res) => {
       numChildren,
       extras,
       guestComment,
+      bookingStatus: "CheckedIn",
     });
 
     await newBooking.save();
@@ -208,5 +211,79 @@ export const deleteBooking = async (req, res) => {
   } catch (error) {
     console.error("❌ Error Deleting Booking:", error);
     res.status(500).json({ message: "Failed to delete booking", error });
+  }
+};
+
+export const checkOut = async (req, res) => {
+  try {
+    console.log("Received booking ID:", req.params.id);
+    const bookingId = new mongoose.Types.ObjectId(req.params.id);
+
+    // Fetch the booking details
+    const booking = await Booking.findById(bookingId)
+      .populate("guest")
+      .populate("room");
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found." });
+    }
+
+    // Fetch the billing details to check payment status
+    const bill = await Billing.findOne({ bookingId });
+    if (!bill) {
+      return res.status(404).json({ message: "Billing record not found." });
+    }
+
+    // Ensure payment is completed before allowing checkout
+    if (bill.paymentStatus !== "paid") {
+      return res
+        .status(400)
+        .json({ message: "Payment must be completed before checkout." });
+    }
+
+    // Update Room status to Available
+    const updatedRoom = await Room.findByIdAndUpdate(
+      booking.room._id,
+      {
+        status: "Available",
+        guest: null,
+        checkOut: null,
+        bookingId: null,
+        cleaning: "In Progress",
+      },
+      { new: true }
+    );
+
+    if (!updatedRoom) {
+      return res.status(404).json({ message: "Room update failed" });
+    }
+
+    // Update Guest status to "Past Guest"
+    const updatedGuest = await Guest.findByIdAndUpdate(
+      booking.guest._id,
+      { status: "Past Guest" },
+      { new: true }
+    );
+
+    if (!updatedGuest) {
+      return res.status(404).json({ message: "Guest update failed" });
+    }
+
+    // ✅ Update Booking status to "CheckedOut"
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      bookingId,
+      { bookingStatus: "CheckedOut" },
+      { new: true }
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Booking update failed" });
+    }
+
+    res
+      .status(200)
+      .json({ message: `Checkout successful for Booking ID: ${bookingId}` });
+  } catch (error) {
+    console.error("❌ Checkout Error:", error);
+    res.status(500).json({ message: "Failed to checkout", error });
   }
 };

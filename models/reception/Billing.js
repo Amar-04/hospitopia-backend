@@ -78,6 +78,7 @@ const billingSchema = new mongoose.Schema(
       enum: ["cash", "debit card", "credit card", "upi"],
       default: null,
     },
+    paymentDate: { type: Date, default: null },
   },
   { timestamps: true }
 );

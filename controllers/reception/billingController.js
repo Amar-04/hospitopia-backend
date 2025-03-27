@@ -9,6 +9,9 @@ export const generateBill = async (req, res) => {
   try {
     const { bookingId } = req.params;
 
+    // Check if a bill already exists
+    let bill = await Billing.findOne({ bookingId });
+
     // Fetch Booking Details
     const booking = await Booking.findById(bookingId)
       .populate("guest")
@@ -19,7 +22,7 @@ export const generateBill = async (req, res) => {
     const room = await Room.findById(booking.room);
     if (!room) return res.status(404).json({ message: "Room not found" });
 
-    // Fetch Room Type Details using roomTypeId
+    // Fetch Room Type Details
     const roomType = await RoomType.findById(room.type);
     if (!roomType)
       return res.status(404).json({ message: "Room Type not found" });
@@ -54,11 +57,14 @@ export const generateBill = async (req, res) => {
     const foodOrders = await FoodOrder.find({
       room: room._id,
       bookingId,
+      receptionStatus: "Delivered",
     }).populate("items");
+
     const totalFoodCost = foodOrders.reduce(
       (sum, order) => sum + order.price,
       0
     );
+
     // Fetch All Service Requests for this Booking
     const serviceRequests = await ServiceRequest.find({
       room: room._id,
@@ -75,53 +81,101 @@ export const generateBill = async (req, res) => {
     const taxAmount = subtotal * 0.05;
     const totalAmount = subtotal + taxAmount;
 
-    // Create Bill
-    const bill = new Billing({
-      bookingId,
-      guest: {
+    if (bill) {
+      // ✅ **Update Existing Bill**
+      bill.guest = {
         guestId: guest._id,
         name: guest.name,
         email: guest.email,
         phone: guest.phone,
-      },
-      room: {
+      };
+      bill.room = {
         roomId: room._id,
         roomNumber: room.number,
-        roomTypeId: roomType._id, // Store only roomTypeId
+        roomTypeId: roomType._id,
         numNights,
         numAdults: booking.numAdults,
         numChildren: booking.numChildren,
         extraAdults,
         extraChildren,
         totalRoomPrice,
-      },
-      foodOrders: foodOrders.map((order) => ({
+      };
+      bill.foodOrders = foodOrders.map((order) => ({
         orderId: order._id,
         items: order.items.map((item) => ({
           itemId: item._id,
           name: item.name,
         })),
         price: order.price,
-      })),
-      totalFoodCost,
-      serviceRequests: serviceRequests.map((request) => ({
+      }));
+      bill.totalFoodCost = totalFoodCost;
+      bill.serviceRequests = serviceRequests.map((request) => ({
         requestId: request._id,
         services: request.services.map((service) => ({
           serviceId: service._id,
           name: service.serviceName,
         })),
         price: request.price,
-      })),
-      totalServiceCost,
-      subtotal,
-      taxes: 5,
-      totalAmount,
-    });
+      }));
+      bill.totalServiceCost = totalServiceCost;
+      bill.subtotal = subtotal;
+      bill.taxes = 5;
+      bill.totalAmount = totalAmount;
+      bill.updatedAt = new Date(); // Track last update time
 
-    // Save Bill
-    await bill.save();
+      await bill.save();
+      res.status(200).json({ message: "Bill updated successfully", bill });
+    } else {
+      // ✅ **Create New Bill If None Exists**
+      const newBill = new Billing({
+        bookingId,
+        guest: {
+          guestId: guest._id,
+          name: guest.name,
+          email: guest.email,
+          phone: guest.phone,
+        },
+        room: {
+          roomId: room._id,
+          roomNumber: room.number,
+          roomTypeId: roomType._id,
+          numNights,
+          numAdults: booking.numAdults,
+          numChildren: booking.numChildren,
+          extraAdults,
+          extraChildren,
+          totalRoomPrice,
+        },
+        foodOrders: foodOrders.map((order) => ({
+          orderId: order._id,
+          items: order.items.map((item) => ({
+            itemId: item._id,
+            name: item.name,
+          })),
+          price: order.price,
+        })),
+        totalFoodCost,
+        serviceRequests: serviceRequests.map((request) => ({
+          requestId: request._id,
+          services: request.services.map((service) => ({
+            serviceId: service._id,
+            name: service.serviceName,
+          })),
+          price: request.price,
+        })),
+        totalServiceCost,
+        subtotal,
+        taxes: 5,
+        totalAmount,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
-    res.status(201).json(bill);
+      await newBill.save();
+      res
+        .status(201)
+        .json({ message: "Bill created successfully", bill: newBill });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -170,18 +224,35 @@ export const updatePaymentStatus = async (req, res) => {
     const { billId } = req.params;
     const { paymentStatus, paymentMethod } = req.body;
 
-    // Update the bill (Mongoose schema will handle validation)
-    const updatedBill = await Billing.findByIdAndUpdate(
-      billId,
-      {
-        paymentStatus,
-        paymentMethod: paymentStatus === "paid" ? paymentMethod : null, // Ensure paymentMethod is only set if status is paid
-      },
-      { new: true }
-    );
+    const updateFields = { paymentStatus };
+
+    if (paymentStatus === "paid") {
+      updateFields.paymentMethod = paymentMethod;
+      updateFields.paymentDate = new Date(); // ✅ Store payment date
+    } else {
+      updateFields.paymentMethod = null;
+      updateFields.paymentDate = null; // Reset if payment is changed back to pending
+    }
+
+    const updatedBill = await Billing.findByIdAndUpdate(billId, updateFields, {
+      new: true,
+    });
 
     if (!updatedBill) {
       return res.status(404).json({ message: "Bill not found" });
+    }
+
+    // ✅ Update Booking status to "Payment Completed" when payment is made
+    if (paymentStatus === "paid") {
+      const updatedBooking = await Booking.findOneAndUpdate(
+        updatedBill.bookingId, // Find booking by bookingId
+        { bookingStatus: "Payment Completed" },
+        { new: true }
+      );
+
+      if (!updatedBooking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
     }
 
     res.status(200).json(updatedBill);
