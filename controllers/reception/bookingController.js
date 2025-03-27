@@ -115,7 +115,7 @@ export const createBooking = async (req, res) => {
 
 export const getAllBookings = async (req, res) => {
   try {
-    const { page = 1, limit = 5, status, sort } = req.query;
+    const { page = 1, limit = 5, status, sort, all } = req.query;
     const filter = {};
 
     // Optional status filter
@@ -137,6 +137,12 @@ export const getAllBookings = async (req, res) => {
     // ✅ Apply sorting before executing the query
     if (sortOrder !== null) {
       query = query.sort({ createdAt: sortOrder });
+    }
+
+    // ✅ If `all=true`, return all bookings without pagination
+    if (all === "true") {
+      const bookings = await query;
+      return res.json({ results: bookings });
     }
 
     // ✅ Apply pagination AFTER sorting

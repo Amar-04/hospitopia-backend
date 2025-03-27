@@ -6,7 +6,7 @@ dotenv.config();
 
 const sourceDBName = "hospitopia"; // Change this to your source database name
 const targetDBName = "hospitopia2"; // Change this to your target database name
-const collectionName = "kitcheninventories"; // Change this to your collection name
+const collectionName = "inventories"; // Change this to your collection name
 
 const copyCollection = async () => {
     try {
