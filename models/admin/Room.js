@@ -39,36 +39,5 @@ const roomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Middleware to set price before saving a new room
-roomSchema.pre("save", function (next) {
-  const priceMapping = {
-    Standard: 100,
-    Deluxe: 200,
-    Suite: 300,
-  };
-
-  if (this.isNew || this.isModified("type")) {
-    this.price = priceMapping[this.type]; // Automatically set price
-  }
-
-  next();
-});
-
-// Middleware to update price when room type is modified using findOneAndUpdate
-roomSchema.pre("findOneAndUpdate", async function (next) {
-  const update = this.getUpdate();
-
-  if (update.type) {
-    const priceMapping = {
-      Standard: 100,
-      Deluxe: 200,
-      Suite: 300,
-    };
-    update.price = priceMapping[update.type]; // Auto-update price
-  }
-
-  next();
-});
-
 const Room = mongoose.model("Room", roomSchema);
 export default Room;

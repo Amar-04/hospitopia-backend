@@ -24,12 +24,36 @@ const kitchenInventorySchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      required: [true, "Status is required"],
+      // required: [true, "Status is required"],
       enum: ["Good", "Low", "Critical"],
     },
   },
   { timestamps: true }
 );
 
-const KitchenInventory = mongoose.model("Inventory", kitchenInventorySchema);
+// Function to determine status based on stock and minRequired
+function determineStatus(stock, minRequired) {
+  if (stock > minRequired * 1.25) return "Good";
+  if (stock > minRequired) return "Low";
+  return "Critical";
+}
+
+// Pre-save middleware to set status automatically
+kitchenInventorySchema.pre("save", function (next) {
+  this.status = determineStatus(this.stock, this.minRequired);
+  next();
+});
+
+// Pre-update middleware to set status automatically
+kitchenInventorySchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.stock !== undefined || update.minRequired !== undefined) {
+    const newStock = update.stock ?? this.stock;
+    const newMinRequired = update.minRequired ?? this.minRequired;
+    update.status = determineStatus(newStock, newMinRequired);
+  }
+  next();
+});
+
+const KitchenInventory = mongoose.model("kitchenInventory", kitchenInventorySchema);
 export default KitchenInventory;

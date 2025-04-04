@@ -91,7 +91,6 @@ export const createBooking = async (req, res) => {
     if (!updatedGuest) {
       return res.status(404).json({ message: "Guest update failed" });
     }
-    res.status(201).json(newBooking);
 
     // Fetch all inventory items
     const inventoryItems = await AdminInventory.find();
@@ -107,6 +106,8 @@ export const createBooking = async (req, res) => {
         });
       }
     }
+
+    res.status(201).json(newBooking);
   } catch (error) {
     console.error("❌ Error Creating Booking:", error);
     res.status(500).json({ message: "Failed to create booking", error });
@@ -287,7 +288,7 @@ export const checkOut = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: `Checkout successful for Booking ID: ${bookingId}` });
+      .json({ message: `Checkout successful for Room Number: ${booking.room.number}` });
   } catch (error) {
     console.error("❌ Checkout Error:", error);
     res.status(500).json({ message: "Failed to checkout", error });

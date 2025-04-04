@@ -33,6 +33,7 @@ const billingSchema = new mongoose.Schema(
       numAdults: { type: Number, required: true },
       numChildren: { type: Number, required: true },
       extraAdults: { type: Number, required: true, default: 0 },
+      
       extraChildren: { type: Number, required: true, default: 0 },
       totalRoomPrice: { type: Number, required: true },
     },
