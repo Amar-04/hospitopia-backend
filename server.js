@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/admin/userRoutes.js";
 import inventoryRoutes from "./routes/admin/inventoryRoutes.js";
+import inventoryOrderRoutes from "./routes/admin/InventoryOrderRoutes.js"
 import roomRoutes from "./routes/admin/roomRoutes.js";
 import roomTypeRoutes from "./routes/admin/roomTypeRoutes.js";
 import dashboardDataRoutes from "./routes/admin/dashboardDataRoutes.js";
@@ -28,6 +29,7 @@ connectDB();
 //Admin
 app.use("/", userRoutes);
 app.use("/", inventoryRoutes);
+app.use("/", inventoryOrderRoutes);
 app.use("/", roomRoutes);
 app.use("/", roomTypeRoutes);
 app.use("/",dashboardDataRoutes);
