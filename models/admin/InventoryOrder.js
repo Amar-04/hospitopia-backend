@@ -6,11 +6,28 @@ const inventoryOrderSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    items: [
+    adminInventoryItems: [
       {
         itemId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "AdminInventory",
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    kitchenInventoryItems: [
+      {
+        itemId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "KitchenInventory",
           required: true,
         },
         name: {

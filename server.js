@@ -4,7 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/admin/userRoutes.js";
 import inventoryRoutes from "./routes/admin/inventoryRoutes.js";
-import inventoryOrderRoutes from "./routes/admin/InventoryOrderRoutes.js"
+import inventoryOrderRoutes from "./routes/admin/InventoryOrderRoutes.js";
 import roomRoutes from "./routes/admin/roomRoutes.js";
 import roomTypeRoutes from "./routes/admin/roomTypeRoutes.js";
 import dashboardDataRoutes from "./routes/admin/dashboardDataRoutes.js";
@@ -17,6 +17,7 @@ import kitchenInventoryRoutes from "./routes/kitchen/inventoryRoutes.js";
 import menuCategoryRoutes from "./routes/kitchen/menuCategoryRoutes.js";
 import menuItemRoutes from "./routes/kitchen/menuItemRoutes.js";
 import foodOrderRoutes from "./routes/reception/foodOrderRoutes.js";
+import expenseRoutes from "./routes/admin/expenseRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -32,7 +33,8 @@ app.use("/", inventoryRoutes);
 app.use("/", inventoryOrderRoutes);
 app.use("/", roomRoutes);
 app.use("/", roomTypeRoutes);
-app.use("/",dashboardDataRoutes);
+app.use("/", dashboardDataRoutes);
+app.use("/", expenseRoutes);
 
 //Reception
 app.use("/", guestRoutes);

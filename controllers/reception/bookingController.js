@@ -101,9 +101,13 @@ export const createBooking = async (req, res) => {
     // Decrement stock for each inventory item
     for (const item of inventoryItems) {
       if (item.stock > 0) {
-        await AdminInventory.findByIdAndUpdate(item._id, {
-          $inc: { stock: -1 },
-        });
+        await AdminInventory.findOneAndUpdate(
+          { _id: item._id },
+          {
+            stock: item.stock - 1,
+            minRequired: item.minRequired, // provide this so middleware can calculate status
+          }
+        );
       }
     }
 
@@ -286,9 +290,9 @@ export const checkOut = async (req, res) => {
       return res.status(404).json({ message: "Booking update failed" });
     }
 
-    res
-      .status(200)
-      .json({ message: `Checkout successful for Room Number: ${booking.room.number}` });
+    res.status(200).json({
+      message: `Checkout successful for Room Number: ${booking.room.number}`,
+    });
   } catch (error) {
     console.error("❌ Checkout Error:", error);
     res.status(500).json({ message: "Failed to checkout", error });

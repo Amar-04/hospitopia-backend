@@ -30,6 +30,7 @@ adminInventorySchema.pre("save", function (next) {
 
 // Pre-update middleware to set status automatically
 adminInventorySchema.pre("findOneAndUpdate", function (next) {
+  console.log("Middleware fired");
   const update = this.getUpdate();
   if (update.stock !== undefined || update.minRequired !== undefined) {
     const newStock = update.stock ?? this.stock;
@@ -40,4 +41,4 @@ adminInventorySchema.pre("findOneAndUpdate", function (next) {
 });
 
 const AdminInventory = mongoose.model("AdminInventory", adminInventorySchema);
-export default AdminInventory;
+export default AdminInventory; 

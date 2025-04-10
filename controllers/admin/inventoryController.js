@@ -5,17 +5,20 @@ export const getAdminInventory = async (req, res) => {
   try {
     const { page = 1, limit = 5, category, status } = req.query;
 
-    
     const filter = {};
-    if (category) filter.category = category; 
-    if (status) filter.status = status; 
+    if (category) filter.category = category;
+    if (status) filter.status = status;
 
     console.log("🔍 Applied Filters:", filter); // Debugging filters
 
-    // Fetch inventory items with pagination
-    const inventory = await AdminInventory.find(filter)
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+    let query = AdminInventory.find(filter);
+
+    // If limit is not 0, apply pagination
+    if (limit > 0) {
+      query = query.skip((page - 1) * limit).limit(limit);
+    }
+
+    const inventory = await query;
 
     const totalItems = await AdminInventory.countDocuments(filter);
 
