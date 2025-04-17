@@ -6,6 +6,8 @@ const kitchenInventorySchema = new mongoose.Schema(
       type: String,
       required: [true, "Item name is required"],
       trim: true,
+      minlength: 1,
+      maxlength: 200,
     },
     category: {
       type: String,
@@ -16,11 +18,13 @@ const kitchenInventorySchema = new mongoose.Schema(
       type: Number,
       required: [true, "Stock quantity is required"],
       min: [0, "Stock cannot be negative"],
+      max: [10000, "Stock exceeds the maximum allowed"],
     },
     minRequired: {
       type: Number,
       required: [true, "Minimum required stock is required"],
       min: [0, "Minimum required stock cannot be negative"],
+      max: [5000, "Minimum required stock exceeds the allowed limit"],
     },
     status: {
       type: String,
@@ -55,5 +59,8 @@ kitchenInventorySchema.pre("findOneAndUpdate", function (next) {
   next();
 });
 
-const KitchenInventory = mongoose.model("kitchenInventory", kitchenInventorySchema);
+const KitchenInventory = mongoose.model(
+  "kitchenInventory",
+  kitchenInventorySchema
+);
 export default KitchenInventory;

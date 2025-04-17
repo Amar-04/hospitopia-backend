@@ -5,6 +5,7 @@ const inventoryOrderSchema = new mongoose.Schema(
     date: {
       type: Date,
       required: true,
+      min: new Date("2000-01-01"),
     },
     adminInventoryItems: [
       {
@@ -16,10 +17,13 @@ const inventoryOrderSchema = new mongoose.Schema(
         name: {
           type: String,
           required: true,
+          maxlength: 100,
         },
         quantity: {
           type: Number,
           required: true,
+          min: 1,
+          max: 1000,
         },
       },
     ],
@@ -33,10 +37,12 @@ const inventoryOrderSchema = new mongoose.Schema(
         name: {
           type: String,
           required: true,
+          maxlength: 100,
         },
         quantity: {
           type: Number,
           required: true,
+          max: 1000,
         },
       },
     ],
@@ -48,6 +54,8 @@ const inventoryOrderSchema = new mongoose.Schema(
     totalBill: {
       type: Number,
       required: true,
+      min: 0,
+      max: 1000000,
     },
   },
   { timestamps: true }

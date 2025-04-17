@@ -8,13 +8,15 @@ const roomSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       match: [/^\d+$/, "Room number must be numeric"], // Ensures only numbers
+      minlength: 1,
+      maxlength: 5,
     },
     type: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "RoomType", // References RoomType collection
       required: [true, "Room type is required"],
     },
-    price: { type: Number, required: true }, // Auto-assigned, no manual input
+    price: { type: Number, required: true, min: 0, max: 10000 }, // Auto-assigned, no manual input
     status: {
       type: String,
       enum: {
@@ -24,16 +26,16 @@ const roomSchema = new mongoose.Schema(
       },
       required: [true, "Room status is required"],
     },
-    guest: { type: String, trim: true },
+    guest: { type: String, trim: true, maxlength: 100 },
     checkOut: { type: Date },
     bookingId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Booking", // Store the bookingId from Room
     },
-    cleaning: { type: String, trim: true },
+    cleaning: { type: String, trim: true, maxlength: 100 },
     lastCleaned: { type: Date },
-    issue: { type: String, trim: true },
-    eta: { type: String, trim: true },
+    issue: { type: String, trim: true, maxlength: 200 },
+    eta: { type: String, trim: true, maxlength: 50 },
     arrival: { type: Date },
   },
   { timestamps: true }

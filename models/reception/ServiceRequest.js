@@ -21,9 +21,11 @@ const serviceRequestSchema = new mongoose.Schema({
       ref: "Service",
       required: [true, "At least one item is required"],
     },
-  ], 
+  ],
   price: {
     type: Number,
+    min: [0, "Price cannot be negative"], // Min price validation
+    max: [10000, "Price cannot exceed 10000"],
   },
 });
 

@@ -7,10 +7,16 @@ const menuCategorySchema = new mongoose.Schema(
       required: [true, "Category name is required"],
       unique: true,
       trim: true,
+      minlenght: 1,
+      maxlenght: 100,
     },
   },
   { timestamps: true }
 );
 
-const MenuCategory = mongoose.model("MenuCategory", menuCategorySchema, "menuCategory");
+const MenuCategory = mongoose.model(
+  "MenuCategory",
+  menuCategorySchema,
+  "menuCategory"
+);
 export default MenuCategory;

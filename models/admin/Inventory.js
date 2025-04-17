@@ -2,14 +2,15 @@ import mongoose from "mongoose";
 
 const adminInventorySchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, maxlength: 100 },
     category: {
       type: String,
       enum: ["Housekeeping", "Amenities"],
       required: true,
+      maxlength: 50,
     },
-    stock: { type: Number, required: true },
-    minRequired: { type: Number, required: true },
+    stock: { type: Number, required: true, min: 0, max: 10000 },
+    minRequired: { type: Number, required: true, min: 0, max: 5000 },
     status: { type: String, enum: ["Good", "Low", "Critical"] },
   },
   { timestamps: true }
@@ -41,4 +42,4 @@ adminInventorySchema.pre("findOneAndUpdate", function (next) {
 });
 
 const AdminInventory = mongoose.model("AdminInventory", adminInventorySchema);
-export default AdminInventory; 
+export default AdminInventory;

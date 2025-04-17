@@ -29,7 +29,6 @@ const isActive = (shiftStart, shiftEnd) => {
   return currentTime >= startMinutes || currentTime < endMinutes;
 };
 
-
 const getLastActive = (shiftEnd) => {
   if (!shiftEnd) return null;
 
@@ -60,7 +59,7 @@ export const getUsers = async (req, res) => {
     if (role) filter.role = role;
 
     // Step 1: Fetch all users matching the search/role filters (before pagination)
-    let allUsers = await User.find(filter);
+    let allUsers = await User.find(filter).sort({ createdAt: -1 });
 
     // Step 2: Compute the status for all users
     allUsers = allUsers.map((user) => ({

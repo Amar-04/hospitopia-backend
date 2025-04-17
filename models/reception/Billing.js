@@ -13,7 +13,7 @@ const billingSchema = new mongoose.Schema(
         ref: "Guest",
         required: true,
       },
-      name: { type: String, required: true },
+      name: { type: String, required: true, minlength: 1, maxlength: 100 },
       email: { type: String, required: true },
       phone: { type: String, required: true },
     },
@@ -29,13 +29,38 @@ const billingSchema = new mongoose.Schema(
         ref: "RoomType",
         required: true,
       },
-      numNights: { type: Number, required: true },
-      numAdults: { type: Number, required: true },
-      numChildren: { type: Number, required: true },
-      extraAdults: { type: Number, required: true, default: 0 },
-      
-      extraChildren: { type: Number, required: true, default: 0 },
-      totalRoomPrice: { type: Number, required: true },
+      numNights: {
+        type: Number,
+        required: true,
+        min: [1, "Number of nights must be at least 1"], // At least 1 night stay
+      },
+      numAdults: {
+        type: Number,
+        required: true,
+        min: [1, "Number of adults must be at least 1"], // At least 1 adult
+      },
+      numChildren: {
+        type: Number,
+        required: true,
+        min: [0, "Number of children cannot be negative"], // No negative number of children
+      },
+      extraAdults: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: [0, "Extra adults cannot be negative"], // No negative extra adults
+      },
+      extraChildren: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: [0, "Extra children cannot be negative"], // No negative extra children
+      },
+      totalRoomPrice: {
+        type: Number,
+        required: true,
+        min: [0, "Room price cannot be negative"], // Room price cannot be negative
+      },
     },
     foodOrders: [
       {
@@ -49,7 +74,11 @@ const billingSchema = new mongoose.Schema(
         price: { type: Number, required: true },
       },
     ],
-    totalFoodCost: { type: Number, required: true },
+    totalFoodCost: {
+      type: Number,
+      required: true,
+      min: [0, "Total food cost cannot be negative"],
+    },
     serviceRequests: [
       {
         requestId: {
@@ -62,13 +91,34 @@ const billingSchema = new mongoose.Schema(
             name: { type: String, required: true },
           },
         ],
-        price: { type: Number, required: true },
+        price: {
+          type: Number,
+          required: true,
+          min: [0, "Service request price cannot be negative"],
+        },
       },
     ],
-    totalServiceCost: { type: Number, required: true, default: 0 },
-    subtotal: { type: Number, required: true },
-    taxes: { type: Number, default: 5 }, // Fixed 5% tax
-    totalAmount: { type: Number, required: true },
+    totalServiceCost: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: [0, "Total Service request price cannot be negative"],
+    },
+    subtotal: {
+      type: Number,
+      required: true,
+      min: [0, "Subtotal cannot be negative"], // Subtotal cannot be negative
+    },
+    taxes: {
+      type: Number,
+      default: 5, // Fixed 5% tax
+      min: [0, "Tax cannot be negative"], // Tax cannot be negative
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: [0, "Total amount cannot be negative"], // Total amount cannot be negative
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "refunded", "cancelled"],

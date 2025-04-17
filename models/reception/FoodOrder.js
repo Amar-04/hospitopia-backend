@@ -41,6 +41,7 @@ const foodOrderSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
+      max: [10000, "Price exceeds maximum allowed limit"],
     },
   },
   { timestamps: true }

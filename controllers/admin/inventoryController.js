@@ -11,7 +11,7 @@ export const getAdminInventory = async (req, res) => {
 
     console.log("🔍 Applied Filters:", filter); // Debugging filters
 
-    let query = AdminInventory.find(filter);
+    let query = AdminInventory.find(filter).sort({ createdAt: -1 });
 
     // If limit is not 0, apply pagination
     if (limit > 0) {

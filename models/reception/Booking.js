@@ -30,20 +30,31 @@ const bookingSchema = new mongoose.Schema(
     checkIn: {
       type: Date,
       required: true,
+      min: new Date("2000-01-01"),
     },
     checkOut: {
       type: Date,
       required: true,
+      validate: {
+        validator: function (value) {
+          return value > this.checkIn;
+        },
+        message: "Check-out date must be after check-in date.",
+      },
     },
     numAdults: {
       type: Number,
       required: true,
       default: 1,
+      min: [1, "At least 1 adult is required."],
+      max: [5, "Maximum 5 adults allowed per room."],
     },
     numChildren: {
       type: Number,
       required: true,
       default: 0,
+      min: [0, "Number of children cannot be negative."],
+      max: [5, "Maximum 5 children allowed per room."],
     },
     extras: {
       type: [String],

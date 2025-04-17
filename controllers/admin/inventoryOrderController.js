@@ -5,8 +5,12 @@ import Expense from "../../models/admin/Expense.js";
 
 export const createInventoryOrder = async (req, res) => {
   try {
-    const { date, adminInventoryItems = [], kitchenInventoryItems = [], totalBill } =
-      req.body;
+    const {
+      date,
+      adminInventoryItems = [],
+      kitchenInventoryItems = [],
+      totalBill,
+    } = req.body;
 
     // Validation
     if (
@@ -58,8 +62,19 @@ export const createInventoryOrder = async (req, res) => {
 
 export const getAllInventoryOrders = async (req, res) => {
   try {
-    const orders = await InventoryOrder.find().sort({ createdAt: -1 });
-    res.status(200).json(orders);
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 5; // Default to 5 items per page if not provided
+    const skip = (page - 1) * limit;
+
+    const totalOrders = await InventoryOrder.countDocuments(); // Get total count of orders
+    const totalPages = Math.ceil(totalOrders / limit); // Calculate total pages
+
+    const orders = await InventoryOrder.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ orders, totalPages });
   } catch (error) {
     console.error("Error fetching inventory orders:", error);
     res.status(500).json({ message: "Server error" });

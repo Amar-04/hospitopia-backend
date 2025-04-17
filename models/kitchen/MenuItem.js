@@ -6,11 +6,15 @@ const menuItemSchema = new mongoose.Schema(
       type: String,
       required: [true, "Item name is required"],
       trim: true,
+      minlength: 1,
+      maxlength: 100,
     },
     description: {
       type: String,
       required: [true, "Description is required"],
       trim: true,
+      minlentgh: 1,
+      maxlength: 500,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +35,7 @@ const menuItemSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
+      max: [10000, "Price cannot exceed 10000"],
     },
   },
   { timestamps: true }
